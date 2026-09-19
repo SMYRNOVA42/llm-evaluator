@@ -137,10 +137,16 @@ with no slash. Group ids are negative.
 thing on GitHub: it starts the stand, runs the suite, publishes the Allure report to
 GitHub Pages and posts the summary to Telegram with a link to it.
 
-Trigger it by hand from the Actions tab. There is a weekly schedule in the file, commented
-out. It deliberately does **not** run on push or pull request: this suite measures an
-LLM's answers, not the code. It is slow, it costs money on every run, and it is expected
-to be partially red — none of which belongs in a merge gate.
+It runs on Mondays at 06:07 UTC, and on demand from the Actions tab. It deliberately does
+**not** run on push or pull request: this suite measures an LLM's answers, not the code.
+It is slow, it costs money on every run, and it is expected to be partially red — none of
+which belongs in a merge gate.
+
+The schedule lives in the YAML, not in a settings page, so changing it is a commit — and
+only the copy on the default branch is ever read. Two things about GitHub's cron are worth
+knowing: it is UTC and ignores daylight saving, so a fixed local time drifts by an hour
+twice a year; and **a scheduled workflow is disabled automatically after 60 days without
+activity in the repository**. GitHub emails a warning first, and one commit re-arms it.
 
 Two jobs. The stand lives inside the first one, next to the tests, because each job gets
 a fresh machine and a service cannot outlive its job.
@@ -149,6 +155,10 @@ a fresh machine and a service cannot outlive its job.
 |---|---|
 | `evaluate` | Starts the stand, runs the suite, uploads `allure-results` as an artifact. A red suite does not stop it. |
 | `report` | Builds the Allure report, publishes it to Pages, sends the summary, and fails the run only when *nothing* passed. |
+
+The published report is the last run and only the last run: each deployment replaces the
+whole site, and nothing expires it. Older runs survive as the `allure-results` artifact on
+their own workflow run, for 30 days.
 
 That last rule is the point: a partially red suite is the product, so it must not fail the
 workflow. A run where nothing passed at all means the environment never came up, and that

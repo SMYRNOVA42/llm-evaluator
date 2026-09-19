@@ -1,11 +1,13 @@
 name: Evaluation
 
-# Manual only for now. Uncomment the schedule when you want it running on its own -
-# the suite costs money on every run, so it should be a deliberate cadence.
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "0 6 * * 1"   # 06:00 UTC every Monday
+  schedule:
+    # Mondays at 06:07 UTC - 09:07 in Kyiv while summer time is in force, 08:07 in
+    # winter. GitHub cron is UTC only and does not follow daylight saving, so a fixed
+    # local time is not expressible; the hour drifts twice a year and that is fine for a
+    # weekly run. The odd minute is deliberate: scheduled jobs queue heavily on the hour.
+    - cron: "7 6 * * 1"
 
 # Not on push or pull_request on purpose: this suite measures an LLM's answers, not the
 # code. It is slow, it costs money, and it is expected to be partially red - none of
