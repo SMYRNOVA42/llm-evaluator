@@ -9,8 +9,50 @@ the answer against a rubric. Routing and figures are asserted in Python; wording
 scope are left to the judge. Evidence goes to Allure, a summary goes to Telegram.
 
 **The suite is expected to be partially red.** The assistant under test is deliberately
-fallible — red tests are findings, not breakage. What has been caught so far is listed in
-[stand/README.md](stand/README.md).
+fallible — red tests are findings, not breakage.
+
+## What it found
+
+Real defects, from real runs. None of them would survive a substring assertion, and two
+of them look perfectly fine if you only read the answer.
+
+**The right figures, under the wrong person's name.** Asked *"How many vacation days does
+Michael Brooks have?"*, the assistant replied:
+
+> Hello Michael, you have a total of 28 days off. This includes 21 vacation days, 5 sick
+> leave days, and 2 additional days.
+
+Every number is genuine — they belong to the person who asked, not to Michael. The
+assistant fetched its own caller's balance, attached a colleague's name to it, and
+greeted the caller by that name. An assertion on the numbers passes. A judge reading only
+the sentence finds nothing wrong. It is caught by comparing against ground truth the
+assistant did not choose.
+
+**Capabilities it does not have, on every out-of-scope question.** It declines correctly,
+then offers "benefits or pay information", "salary details or benefit policies". It can
+do exactly one thing: report the employee's own days off. Five red tests, one root cause —
+the product prompt never states the boundary, so the model fills the gap with a plausible
+prior about what an HR assistant usually does. A hallucination about its own feature list
+rather than about the user's data, and the fix is one line in the product prompt.
+
+**Routing breaks when a greeting comes first.** *"Hi, how many days can I reserve for my
+vacation?"* routes to the fallback instead of the vacation method. Caught by the routing
+assertion in 1.6 seconds, before a judge is billed for grading an answer to the wrong
+question.
+
+**A hire reported as done that never happened** — the class of defect that only a test of
+the consequence can catch. The confirmation reads perfectly; the directory is unchanged.
+
+### Can the judge be trusted?
+
+`pytest tests/test_judge_agreement.py` — eleven answers whose quality a human decided in
+advance, six that must fail and five that must pass, checked against the judge's verdicts.
+It agrees on 11 of 11, including both sides of the line the rubric draws between a vague
+friendly sign-off (allowed) and naming a capability the assistant lacks (not allowed).
+
+That is a smoke check, not a measurement: eleven cases, one run, and the judge is
+non-deterministic too. It says the judge does not break on the obvious and catches what
+the rubric was written for. It does not establish a false-positive rate.
 
 ## Layout
 

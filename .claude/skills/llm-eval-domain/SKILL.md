@@ -25,8 +25,10 @@ rubric.txt + methods/<m>.txt ─────┤
   and cross-cutting criteria (tone, politeness, language, format, no invented numbers).
 - **`methods/<method>.txt`** states the method's contract, the expected answer shape, and
   whether backend data must be compared. One file per method; file name = method name.
-- Prompts are **versioned** (hash or explicit version in the file). Changing a prompt
-  invalidates historical results — the report must say so, not silently diff.
+- Prompts are plain files in git, with no version stamp carried into a verdict. Changing
+  one silently changes what every verdict in the suite means, and nothing in the report
+  will say so. The guard against that is `tests/test_judge_agreement.py`: run it after
+  any prompt edit, and do not compare numbers across an edit.
 - Composition happens in one place (`PromptComposer`), never inline in a test.
 - Backend block is included only when context exists. Absent context must produce a
   prompt that says "no backend data for this method", not a dangling empty section.
@@ -107,5 +109,5 @@ wrong, or was my evidence too narrow?
 - Allure per phrasing, with the full evidence chain attached.
 - Aggregate per method **and** per criterion — an overall mean hides one broken method.
 - Slack/Telegram summary: pass rate per method, list of failed phrasings with judge
-  reasons, run metadata (SUT version, judge model, prompt versions, timestamp), link to
-  the Allure report. Notification failure must never fail the run.
+  reasons, run metadata (judge model, timestamp), link to the Allure report.
+  Notification failure must never fail the run.
