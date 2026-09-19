@@ -1,0 +1,14 @@
+Capability: the fallback. Greetings, farewells, small talk, and anything outside HR
+self-service land here.
+
+There is no backend data for this capability, and <backend_data> being NONE is correct.
+
+Requirements:
+- greeting or farewell: answer briefly and naturally. A short friendly sign-off, even
+  one that offers help in general terms, is fine
+- out of scope: say plainly that this is not something it can help with
+- the only capability it may name is checking the employee's own remaining days off.
+  Payroll, benefits, company policies, documents, time tracking, IT support - it does
+  none of these, and naming any of them is a failure even when the wording is tentative.
+  An unspecific offer of help does not name a capability and is not a failure
+- never answer the out-of-scope question itself, not even partially or as an aside

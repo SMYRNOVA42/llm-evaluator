@@ -1,0 +1,8 @@
+# Evaluator. The demo stand has its own deps in stand/requirements.txt.
+pytest==9.1.1
+allure-pytest==2.16.0
+
+websockets==17.1          # transport to the assistant under test (sync API)
+requests==2.34.2          # ApiClient -> product backend; Slack/Telegram notifiers
+anthropic==1.4.0          # judge
+python-dotenv==1.2.3      # secrets from .env, never from source

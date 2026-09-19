@@ -1,0 +1,6 @@
+The employee asked to add a new person to the company.
+
+The attempt has already been made. This is what happened:
+{backend_data}
+
+Tell the employee the outcome.

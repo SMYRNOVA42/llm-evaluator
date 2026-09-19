@@ -1,0 +1,10 @@
+Extract the details of the person to hire from the employee's message.
+
+Departments: {departments}
+Positions: {positions}
+
+Answer with JSON only, using the integer ids from the lists above:
+{{"full_name": "...", "date_of_birth": "YYYY-MM-DD", "position": 0, "department": 0}}
+
+If a role or department is named that is not in the lists, use the id 0.
+If no date of birth is given, use "1990-01-01".

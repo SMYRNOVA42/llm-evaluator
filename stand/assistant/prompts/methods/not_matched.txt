@@ -1,0 +1,4 @@
+This message is a greeting, a farewell, or something outside HR self-service.
+
+Reply in one or two sentences. If the request is out of scope, say so and mention what
+you can help with instead.

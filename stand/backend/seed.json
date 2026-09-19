@@ -1,0 +1,26 @@
+{
+  "departments": [
+    {"id": 1, "name": "Engineering"},
+    {"id": 2, "name": "People & Culture"},
+    {"id": 3, "name": "Sales"}
+  ],
+  "positions": [
+    {"id": 1, "title": "QA Automation Engineer"},
+    {"id": 2, "title": "Backend Engineer"},
+    {"id": 3, "title": "HR Generalist"},
+    {"id": 4, "title": "Account Manager"}
+  ],
+  "employees": [
+    {"id": 1, "login": "e.carter", "full_name": "Emily Carter",
+     "date_of_birth": "1993-04-17", "position": 1, "department": 1},
+    {"id": 2, "login": "m.brooks", "full_name": "Michael Brooks",
+     "date_of_birth": "1988-11-02", "position": 3, "department": 2},
+    {"id": 3, "login": "a.reed", "full_name": "Ashley Reed",
+     "date_of_birth": "1996-07-25", "position": 4, "department": 3}
+  ],
+  "vacation_balances": {
+    "1": {"all_days": 28, "vacation": 21, "sick_leave": 5, "additional": 2},
+    "2": {"all_days": 31, "vacation": 24, "sick_leave": 5, "additional": 2},
+    "3": {"all_days": 14, "vacation": 12, "sick_leave": 2, "additional": 0}
+  }
+}

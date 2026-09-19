@@ -1,0 +1,137 @@
+name: Evaluation
+
+# Manual only for now. Uncomment the schedule when you want it running on its own -
+# the suite costs money on every run, so it should be a deliberate cadence.
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: "0 6 * * 1"   # 06:00 UTC every Monday
+
+# Not on push or pull_request on purpose: this suite measures an LLM's answers, not the
+# code. It is slow, it costs money, and it is expected to be partially red - none of
+# which belongs in a merge gate.
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: evaluation
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.12"
+  ALLURE_VERSION: "2.46.1"
+
+jobs:
+  evaluate:
+    name: Run the suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt -r stand/requirements.txt
+
+      # The stand cannot be a separate job: each job is a fresh machine, so the services
+      # have to live alongside the tests that talk to them.
+      - name: Start the stand
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          uvicorn stand.backend.app:app --port 8001 --log-level warning &
+          uvicorn stand.assistant.app:app --port 8000 --log-level warning &
+          timeout 60 bash -c 'until python -m stand.healthcheck; do sleep 2; done'
+
+      # Red tests are findings, not breakage, so a failing suite must not stop the
+      # report from being published. Whether the run was worth anything is decided at
+      # the end of the report job instead.
+      - name: Evaluate
+        id: pytest
+        continue-on-error: true
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: pytest
+
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          retention-days: 30
+
+  report:
+    name: Publish and notify
+    needs: evaluate
+    if: always()
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Allure
+        run: |
+          curl -sL "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz" \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/allure-${ALLURE_VERSION}/bin" >> "$GITHUB_PATH"
+
+      - name: Build the report
+        run: allure generate allure-results -o allure-report --clean
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report
+
+      - name: Publish to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Send the report to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPORT_URL: ${{ steps.deployment.outputs.page_url }}
+        run: python -m evaluator.reporting.notify
+
+      # The only thing that fails this workflow. A partially red suite is the product;
+      # a suite where nothing passed at all means the environment never came up, and
+      # that is a real failure worth a red run.
+      - name: Fail only if the run was worthless
+        run: |
+          python - <<'PY'
+          from evaluator.reporting import read_run_summary
+
+          summary = read_run_summary()
+          print(f"{summary.passed} passed, {summary.failed} failed, {summary.total} total")
+          raise SystemExit(1 if summary.everything_failed else 0)
+          PY

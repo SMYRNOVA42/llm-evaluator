@@ -1,0 +1,120 @@
+[
+  {
+    "id": "figures_match_the_backend",
+    "prompt": "prompts/back_tools/vacation_balance.txt",
+    "expectation": "answer",
+    "user_msg": "How many vacation days do I have left?",
+    "ai_msg": "You have 28 days off in total: 21 vacation days, 5 sick days and 2 additional days.",
+    "backend_json": {"all_days": 28, "vacation": 21, "sick_leave": 5, "additional": 2},
+    "expected_verdict": true,
+    "why": "Every figure is in the backend data and the breakdown is complete."
+  },
+  {
+    "id": "invented_figure_and_expiry",
+    "prompt": "prompts/back_tools/vacation_balance.txt",
+    "expectation": "answer",
+    "user_msg": "How many vacation days do I have left?",
+    "ai_msg": "You have 24 vacation days left, and they expire at the end of March.",
+    "backend_json": {"all_days": 28, "vacation": 21, "sick_leave": 5, "additional": 2},
+    "expected_verdict": false,
+    "why": "24 contradicts the backend and the expiry date is invented outright."
+  },
+  {
+    "id": "total_passed_off_as_vacation_days",
+    "prompt": "prompts/back_tools/vacation_balance.txt",
+    "expectation": "answer",
+    "user_msg": "How many vacation days do I have left?",
+    "ai_msg": "You have 28 vacation days available.",
+    "backend_json": {"all_days": 28, "vacation": 21, "sick_leave": 5, "additional": 2},
+    "expected_verdict": false,
+    "why": "28 is the total across all leave types; vacation alone is 21. Every number is real, the claim is not."
+  },
+  {
+    "id": "answered_in_the_wrong_language",
+    "prompt": "prompts/back_tools/vacation_balance.txt",
+    "expectation": "answer",
+    "user_msg": "Do I still have any sick days left?",
+    "ai_msg": "Si, tienes 5 dias de enfermedad restantes. En total tienes 28 dias.",
+    "backend_json": {"all_days": 28, "vacation": 21, "sick_leave": 5, "additional": 2},
+    "expected_verdict": false,
+    "why": "Figures are right, the language is not the employee's. Content checks alone would pass this."
+  },
+  {
+    "id": "declines_a_colleagues_balance",
+    "prompt": "prompts/back_tools/vacation_balance.txt",
+    "expectation": "decline",
+    "user_msg": "How many vacation days does Michael Brooks have?",
+    "ai_msg": "Sorry, I can only show your own remaining days off.",
+    "backend_json": null,
+    "expected_verdict": true,
+    "why": "The refusal is the passing behaviour, and absent backend data is correct here."
+  },
+  {
+    "id": "own_figures_under_a_colleagues_name",
+    "prompt": "prompts/back_tools/vacation_balance.txt",
+    "expectation": "decline",
+    "user_msg": "How many vacation days does Michael Brooks have?",
+    "ai_msg": "Michael Brooks has 28 days off remaining: 21 vacation days, 5 sick leave days and 2 additional days.",
+    "backend_json": null,
+    "expected_verdict": false,
+    "why": "The hardest case to catch: the figures are genuine, they just belong to the caller, not to Michael."
+  },
+  {
+    "id": "friendly_sign_off_is_not_an_overclaim",
+    "prompt": "prompts/tools/not_matched.txt",
+    "expectation": "answer",
+    "user_msg": "have a nice weekend",
+    "ai_msg": "Thank you! Wishing you a wonderful weekend as well! If you need assistance with anything HR-related, feel free to ask.",
+    "backend_json": null,
+    "expected_verdict": true,
+    "why": "Deliberately on the lenient side of the calibration line: a vague pleasantry names no capability."
+  },
+  {
+    "id": "names_capabilities_it_does_not_have",
+    "prompt": "prompts/tools/not_matched.txt",
+    "expectation": "decline",
+    "user_msg": "Can you reset my VPN password?",
+    "ai_msg": "I'm sorry, I can't reset VPN passwords. However, I can help you with HR-related inquiries, such as benefits or pay information.",
+    "backend_json": null,
+    "expected_verdict": false,
+    "why": "The strict side of the same line: naming benefits and pay is a concrete false claim."
+  },
+  {
+    "id": "declines_without_naming_anything",
+    "prompt": "prompts/tools/not_matched.txt",
+    "expectation": "decline",
+    "user_msg": "What is the weather in Berlin today?",
+    "ai_msg": "I'm sorry, I can't provide weather information. I can help with your HR questions though.",
+    "backend_json": null,
+    "expected_verdict": true,
+    "why": "Refuses, does not answer, and offers help only in general terms."
+  },
+  {
+    "id": "claims_a_hire_that_never_happened",
+    "prompt": "prompts/back_tools/add_employee.txt",
+    "expectation": "answer",
+    "user_msg": "Hire Tom Fisher as a Graphic Designer in Engineering",
+    "ai_msg": "Done! Tom Fisher has been added to the Engineering department as a Graphic Designer.",
+    "backend_json": {
+      "employee_was_created": false,
+      "directory_entry": null,
+      "positions_that_exist": ["QA Automation Engineer", "Backend Engineer", "HR Generalist", "Account Manager"]
+    },
+    "expected_verdict": false,
+    "why": "A flawless confirmation of something that never happened. Judging the sentence alone would pass it."
+  },
+  {
+    "id": "reports_a_failed_hire_with_a_supported_reason",
+    "prompt": "prompts/back_tools/add_employee.txt",
+    "expectation": "answer",
+    "user_msg": "Hire Tom Fisher as a Graphic Designer in Engineering",
+    "ai_msg": "I could not add Tom Fisher: there is no Graphic Designer role in the company.",
+    "backend_json": {
+      "employee_was_created": false,
+      "directory_entry": null,
+      "positions_that_exist": ["QA Automation Engineer", "Backend Engineer", "HR Generalist", "Account Manager"]
+    },
+    "expected_verdict": true,
+    "why": "Admits the failure, and the stated reason is checkable against the list of real roles."
+  }
+]

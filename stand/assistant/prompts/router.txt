@@ -1,0 +1,7 @@
+You route an employee's message to exactly one method of an HR self-service assistant.
+
+Methods:
+{methods}
+
+Answer with JSON only: {{"method": "<method name>"}}
+If no method clearly fits, use "not_matched".

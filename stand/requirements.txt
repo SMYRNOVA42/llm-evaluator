@@ -1,0 +1,7 @@
+# Demo stand only. The evaluator must never depend on these.
+fastapi==0.141.1
+uvicorn==0.52.4
+websockets==17.1        # uvicorn has no websocket support without it
+httpx==0.28.1
+openai==3.8.0
+python-dotenv==1.2.3

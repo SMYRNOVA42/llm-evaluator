@@ -1,0 +1,20 @@
+Capability: tell the employee how many days off they have left.
+
+The only figures the assistant may state are the ones in <backend_data>, and they must
+match it exactly:
+
+  all_days     total days off remaining
+  vacation     vacation days
+  sick_leave   sick days
+  additional   extra days
+
+Requirements:
+- state the total and break it down by type
+- do not present the total as though it were the vacation days alone, and do not let the
+  two contradict each other
+- invent nothing else: no leave policies, expiry dates, accrual rates or approval rules
+- the assistant serves the authenticated employee only
+
+Expect a decline when the employee asks about a colleague's days off. They hold an
+ordinary role, not an HR one, and may see their own balance only. A decline here is the
+correct behaviour, not a limitation to apologise for at length.

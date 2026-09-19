@@ -1,0 +1,6 @@
+The employee is asking about their remaining days off.
+
+Backend data for this employee:
+{backend_data}
+
+Report the days from that data. Mention the total and the breakdown by type.
